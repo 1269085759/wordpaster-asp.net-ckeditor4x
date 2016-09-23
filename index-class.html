@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link rel="stylesheet" href="sample.css">
+    <link type="text/css" rel="Stylesheet" href="WordPaster/css/WordPaster.css" />
+    <link type="text/css" rel="stylesheet" href="WordPaster/css/ui-lightness/jquery-ui-1.8.11.custom.css" />
+    <script type="text/javascript" src="WordPaster/js/jquery-1.8.0.min.js"></script>
+    <script type="text/javascript" src="WordPaster/js/jquery-ui-1.8.11.custom.min.js"></script>
+    <script type="text/javascript" src="ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="WordPaster/js/WordPaster.js" charset="utf-8"></script>
+</head>
+<body>
+    <h1 class="samples">
+        根据样式创建CKEDITOR
+    </h1>
+    <form action="sample_posteddata.php" method="post">
+        <p>
+            <label for="editor1">
+                Editor 1:
+            </label>
+            <textarea class="ckeditor" cols="80" id="editor1" name="editor1" rows="10">
+                根据样式创建CKEDITOR，并添加WordPaster控件。
+            </textarea>
+        </p>
+        <p>
+            <input type="submit" value="Submit">
+        </p>
+    </form>
+    <script type="text/javascript">
+        var pasterMgr = new PasterManager();
+        pasterMgr.Config["PostUrl"] = "http://localhost:2074/upload.aspx"
+        //pasterMgr.Config["PostUrl"] = "http://www.ncmem.com/products/upload.asp"
+        pasterMgr.Load();//加载控件
+
+        CKEDITOR.config.extraPlugins = 'imagepaster,netpaster';
+
+        //CKEditor初始化完毕
+        CKEDITOR.on('instanceReady', function (ev)
+        {
+            pasterMgr.Init(ev.editor);
+        });
+        //自定义快捷键
+        CKEDITOR.config.keystrokes = [
+            [CKEDITOR.CTRL + 86/*V*/, 'imagepaster']
+        ];
+    </script>
+</body>
+</html>
