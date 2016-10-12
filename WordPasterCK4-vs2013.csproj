@@ -301,7 +301,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>2074</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:20741/</IISUrl>
+          <IISUrl>http://localhost:2074/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
