@@ -247,6 +247,7 @@
     <Content Include="WordPaster\css\paster.png" />
     <Content Include="WordPaster\css\WordPaster.css" />
     <Content Include="WordPaster\error.png" />
+    <Content Include="WordPaster\js\w.edge.js" />
     <Content Include="WordPaster\js\WordPaster.js" />
     <Content Include="WordPaster\setup\1.gif" />
     <Content Include="WordPaster\setup\2.gif" />
