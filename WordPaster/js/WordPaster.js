@@ -451,7 +451,7 @@ function WordPasterManager()
 	else if (this.edge)
 	{
 	    jQuery.extend(_this.Browser, _this.BrowserEdge);
-	    jQuery.extend(_this.WordParser, _this.WordParserEdge);
+	    jQuery.extend(_this.WordParserIE, _this.WordParserEdge);
 	    this.event.on("pageLoad", function ()
 	    {
 	        _this.edgeApp.run();
@@ -462,7 +462,7 @@ function WordPasterManager()
 	    });
 	    this.event.on("load_complete", function ()
 	    {
-	        var par = { name: "init", config: _this.Config };
+	        var par = { name: "Init", config: _this.Config };
 	        _this.edgeApp.send(par);
 	        _this.setuped = true;
 	        _this.setupTipClose();
@@ -643,7 +643,8 @@ function WordPasterManager()
 	    {
 	        this.setupTip(); return;
 	    }
-	    if (!this.chrome45 && !this.edge)
+	    console.log(_this.edge);
+	    if (!this.chrome45 && !_this.edge)
 	    {
 	        if (_this.WordParser.HasData())
 	        {
@@ -667,6 +668,10 @@ function WordPasterManager()
 	    if (!this.setuped)
 	    {
 	        this.setupTip(); return;
+	    }
+	    if(this.edge)
+	    {
+	        _this.WordParser.Paste();
 	    }//chrome 45直接调用控件命令
 	    if (this.chrome45)
 	    {
