@@ -27,8 +27,8 @@ var WordPasterConfig = {
 	"EncodeType"		    : "GB2312"
 	, "Company"			    : "荆门泽优软件有限公司"
 	, "Version"			    : "1,5,123,31671"
-	, "License"			    : ""
-	, "Debug"			    : true//调试模式
+	, "License"			    : "DAFB3AE12494FA2E2891238FC22E46AFA6437200A018115574E842DDC2B54DC78558FE1C4701C0504CE530"
+	, "Debug"			    : false//调试模式
 	, "LogFile"			    : "f:\\log.txt"//日志文件路径
 	, "PasteWordType"	    : ""	//粘贴WORD的图片格式。JPG/PNG/GIF/BMP，推荐使用JPG格式，防止出现大图片。
 	, "PasteImageType"	    : ""	//粘贴文件，剪帖板的图片格式，为空表示本地图片格式。JPG/PNG/GIF/BMP
@@ -60,7 +60,8 @@ var WordPasterConfig = {
     , "NatHostName"         : "com.xproer.wordpaster"//
     , "ExtensionID"         : "nmopflahkgegkgkfnhdjpflfjipkpjpk"
 	, "NatPath"		        : "http://www.ncmem.com/download/WordPaster2/WordPaster.nat.crx"
-	, "ExePath"		        : "http://www.ncmem.com/download/WordPaster2/WordPaster.exe"
+    , edge: { protocol: "wordpaster", port: 9200, visible: false }
+	, "ExePath": "http://www.ncmem.com/download/WordPaster2/WordPaster.exe"
 };
 function debugMsg(m) { $("#msg").append(m);}
 var WordPasterActiveX = {
@@ -116,6 +117,31 @@ function WordPasterManager()
 	this.fileMap = new Object();//文件映射表。
 	this.postType = WordPasteImgType.word;//默认是word
 	this.working = false;//正在上传中
+	this.edgeApp = new WebServer(this);
+
+    //pageLoad,pageClose
+	this.event = {
+	    on: function (eventName, callback)
+	    {
+	        if (!this[eventName])
+	        {
+	            this[eventName] = [];
+	        }
+	        this[eventName].push(callback);
+	    },
+	    emit: function (eventName)
+	    {
+	        var that = this;
+	        var params = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [];
+	        if (that[eventName])
+	        {
+	            Array.prototype.forEach.call(that[eventName], function (arg)
+	            {
+	                arg.apply(self, params);
+	            });
+	        }
+	    }
+	};
 
     //IE浏览器信息管理对象
 	this.BrowserIE = {
@@ -255,6 +281,14 @@ function WordPasterManager()
 		}
 		, "Init": function (){}
 	};
+	this.BrowserEdge = {
+	    "Check": function () { }
+	    , "CheckVer": function ()
+	    {
+	        return false;
+	    }
+        , "Init": function () { }
+	};
 
     //WordParser Control
 	this.WordParserIE = {
@@ -345,6 +379,25 @@ function WordPasterManager()
             $(window).bind("beforeunload", function () { obj.exit(); });
         }
 	};
+	this.WordParserEdge = {
+	    "Init": function ()
+	    {
+	    }
+        , "Paste": function ()
+        {
+            if (_this.working) return;
+            _this.working = true;
+            var par = { name: 'Paste', config: _this.Config, fields: _this.Fields };
+            _this.edgeApp.send(par);
+        }
+        , "PasteAuto": function (html)
+        {
+            if (_this.working) return;
+            _this.working = true;
+            var par = { name: 'PasteAuto', data: html, config: _this.Config, fields: _this.Fields };
+            _this.edgeApp.send(par);
+        }
+	};
 	this.WordParser = this.WordParserIE;
 	this.Browser = this.BrowserIE;
 	var browserName = navigator.userAgent.toLowerCase();
@@ -354,7 +407,9 @@ function WordPasterManager()
 	this.firefox = browserName.indexOf("firefox") > 0;
 	this.chrome = browserName.indexOf("chrome") > 0;
 	this.chrome45 = false;
+	this.edge = navigator.userAgent.indexOf("Edge") > 0;
 	this.chrVer = navigator.appVersion.match(/Chrome\/(\d+)/);
+	if (this.edge) { this.ie = this.firefox = this.chrome = this.chrome45 = false; }
 
 	if (this.ie)
 	{
@@ -393,6 +448,26 @@ function WordPasterManager()
 	        }
 	    }
 	}
+	else if (this.edge)
+	{
+	    jQuery.extend(_this.Browser, _this.BrowserEdge);
+	    jQuery.extend(_this.WordParser, _this.WordParserEdge);
+	    this.event.on("pageLoad", function ()
+	    {
+	        _this.edgeApp.run();
+	    });
+	    $(window).bind("beforeunload", function ()
+	    {
+	        _this.edgeApp.close();
+	    });
+	    this.event.on("load_complete", function ()
+	    {
+	        var par = { name: "init", config: _this.Config };
+	        _this.edgeApp.send(par);
+	        _this.setuped = true;
+	        _this.setupTipClose();
+	    });
+	}
 
 	this.setupTip = function ()
 	{
@@ -404,6 +479,13 @@ function WordPasterManager()
 	    crx.attr("href", this.Config["NatPath"]);
 	    this.imgPercent.hide();
 	    this.imgIco.hide();
+	};
+	this.setupTipClose = function ()
+	{
+	    var dom = this.imgMsg.html("图片上传中......");
+	    this.imgPercent.show();
+	    this.imgIco.show();
+	    this.CloseDialogPaste();
 	};
 	this.CheckUpdate = function ()
 	{
@@ -503,6 +585,7 @@ function WordPasterManager()
 	{
 	    $(function ()
 	    {
+	        _this.event.emit("pageLoad");
 	        _this.setuped = _this.Browser.Check();
 	        if (_this.setuped)
 	        {
@@ -560,7 +643,7 @@ function WordPasterManager()
 	    {
 	        this.setupTip(); return;
 	    }
-	    if (!this.chrome45)
+	    if (!this.chrome45 && !this.edge)
 	    {
 	        if (_this.WordParser.HasData())
 	        {
@@ -568,7 +651,11 @@ function WordPasterManager()
 	            _this.WordParser.Paste();
 	        }
 	    }
-	    else if(this.chrome45)
+	    else if (this.chrome45)
+	    {
+	        _this.WordParser.Paste();
+	    }
+	    else if(this.edge)
 	    {
 	        _this.WordParser.Paste();
 	    }
@@ -836,6 +923,10 @@ function WordPasterManager()
 	    this.CloseDialogFile();
 	    _this.working = false;
 	};
+	this.load_complete_edge = function (json)
+	{
+	    _this.event.emit("load_complete");
+	};
 	this.WordParser_StateChanged = function (msg)
 	{
 	    var json = JSON.parse(msg);
@@ -852,6 +943,7 @@ function WordPasterManager()
 	    else if (json.name == "File_PostComplete") _this.File_PostComplete(json);
 	    else if (json.name == "File_PostError") _this.File_PostError(json);
 	    else if (json.name == "Queue_Complete") _this.Queue_Complete(json);
+	    else if (json.name == "load_complete_edge") _this.load_complete_edge(json);
 	};
 }
 
