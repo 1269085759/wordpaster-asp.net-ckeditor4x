@@ -11,6 +11,7 @@
     <script type="text/javascript" src="WordPaster/js/json2.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="WordPaster/js/jquery-1.4.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="WordPaster/js/w.edge.js" charset="utf-8"></script>
     <script type="text/javascript" src="WordPaster/js/WordPaster.js" charset="utf-8"></script>
     <script type="text/javascript" src="WordPaster/js/skygqbox.js" charset="utf-8"></script>
 </head>
