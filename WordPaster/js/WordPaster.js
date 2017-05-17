@@ -131,7 +131,7 @@ function WordPasterManager()
     this.edgeApp = new WebServer(this);
     this.app = WordPasterApp;
     this.app.ins = this;
-	var browserName = navigator.userAgent.toLowerCase();
+    var browserName = navigator.userAgent.toLowerCase();
 	this.ie = browserName.indexOf("msie") > 0;
     //IE11
 	this.ie = this.ie ? this.ie : browserName.search(/(msie\s|trident.*rv:)([\w.]+)/) != -1;
@@ -141,7 +141,6 @@ function WordPasterManager()
 	this.edge = navigator.userAgent.indexOf("Edge") > 0;
 	this.chrVer = navigator.appVersion.match(/Chrome\/(\d+)/);
 	if (this.edge) { this.ie = this.firefox = this.chrome = this.chrome45 = false; }
-
 
     this.event.on("edgeLoad", function () { _this.app.init(); });
     this.event.on("pageLoad", function () {
@@ -166,7 +165,13 @@ function WordPasterManager()
 	    }
 	} //Firefox
 	else if (this.firefox)
-	{
+    {
+        var ver = browserName.match(/firefox\/(\d+)/);
+        if (parseInt(ver[1]) >= 47)
+        {
+            this.app.postMessage = this.app.postMessageEdge;
+            this.edge = true;
+        }
 	} //chrome
 	else if (this.chrome)
 	{
@@ -303,6 +308,9 @@ function WordPasterManager()
 	    var dom             = $("#" + oid).append(this.GetHtml());
 	    this.ffPaster       = dom.find('embed[name="ffPaster"]').get(0);
 	    this.ieParser       = dom.find('object[name="ieParser"]').get(0);
+        this.parter = this.ffPaster;
+        if (this.ie) this.parter = this.ieParser;
+        if (this.ie || this.firefox) this.parter.recvMessage = this.recvMessage;
 	    this.line           = dom.find('div[name="line"]');
 	    this.fileItem       = dom.find('div[name="fileItem"]');
 	    this.filesPanel     = dom.find('div[name="filesPanel"]');
