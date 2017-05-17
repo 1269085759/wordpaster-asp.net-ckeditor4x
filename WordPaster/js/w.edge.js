@@ -23,6 +23,12 @@
             setTimeout(function () { _this.connect() }, 1000);//启动定时器
         }
     };
+    this.runChr = function () {
+        var protocol = mgr.Config.edge.protocol + "://" + mgr.Config.edge.port;
+        var html = "<iframe id='uri-fra' width=1 height=1 src='" + protocol + "'></iframe>";
+        $(document.body).append(html);
+        setTimeout(function () { _this.connect() }, 1000);//启动定时器
+    };
     this.connect = function ()
     {
         if (!_this.tryConnect) return;
@@ -41,7 +47,7 @@
             // 监听消息
             con.onmessage = function (event)
             {
-                mgr.WordParser_StateChanged(event.data);
+                mgr.recvMessage(event.data);
                 //console.log('Client received a message', event);
             };
 

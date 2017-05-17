@@ -76,7 +76,7 @@
     }
     , postMessageEdge: function (json) {
         try {
-            this.ins.edgeApp.postMessage(JSON.stringify(json));
+            this.ins.edgeApp.send(JSON.stringify(json));
         }
         catch (e) { console.log("调用postMessage失败，请检查控件是否安装成功"); }
     }

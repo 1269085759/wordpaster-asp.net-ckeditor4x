@@ -186,8 +186,9 @@ function WordPasterManager()
 	    {
             if (!this.app.supportFF())//仍然支持npapi
             {
+                this.app.postMessage = this.app.postMessageEdge;
                 this.event.on("pageLoad", function () {
-                    _this.edgeApp.run();
+                    _this.edgeApp.runChr();
                 });
                 $(window).bind("beforeunload", function () {
                     _this.edgeApp.close();
