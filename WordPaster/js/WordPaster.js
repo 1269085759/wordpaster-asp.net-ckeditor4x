@@ -98,6 +98,7 @@ function WordPasterManager()
     this.imgIco = null;//jquery obj
     this.imgMsg = null;//jquery obj
     this.imgPercent = null;//jquery obj
+    this.ui = { setup: null ,single:null};
     this.ffPaster = null;
     this.ieParser = null;
     this.setuped = false;//控件是否安装
@@ -224,26 +225,29 @@ function WordPasterManager()
 	        _this.setupTipClose();
 	    });
 	}
-
+    this.setup_check = function ()
+    {
+        this.ui.setup.skygqbox();
+        //this.OpenDialogPaste();
+        var dom = this.ui.setup.html("控件加载中，如果未加载成功请先<a name='w-exe'>安装控件</a>");
+        var lnk = dom.find('a[name="w-exe"]');
+        lnk.attr("href", this.Config["ExePath"]);
+    }
 	this.need_setup = function ()
-	{
-	    this.OpenDialogPaste();
-	    var dom = this.imgMsg.html("未检测到控件，请先<a name='aCtl'>安装控件</a>,Chrome 45+需要单独<a name='aCrx'>安装扩展</a>");
+    {
+        this.ui.setup.skygqbox();
+	    //this.OpenDialogPaste();
+        var dom = this.ui.setup.html("未检测到控件，请先<a name='aCtl'>安装控件</a>,Chrome 45+需要单独<a name='aCrx'>安装扩展</a>");
 	    var lnk = dom.find('a[name="aCtl"]');
 	    lnk.attr("href", this.Config["ExePath"]);
 	    var crx = dom.find('a[name="aCrx"]');
 	    crx.attr("href", this.Config["NatPath"]);
-	    this.imgPercent.hide();
-	    this.imgIco.hide();
     };
     this.need_update = function ()
     {
-        this.OpenDialogPaste();
-        var dom = this.imgMsg.html("发现新版本，请<a name='w-exe' href='#'>更新</a>");
+        var dom = this.ui.setup.html("发现新版本，请<a name='w-exe' href='#'>更新</a>");
         var lnk = dom.find('a[name="w-exe"]');
         lnk.attr("href", this.Config["ExePath"]);
-        this.imgPercent.hide();
-        this.imgIco.hide();
     };
 	this.setupTipClose = function ()
 	{
@@ -283,7 +287,9 @@ function WordPasterManager()
 	    //单张图片上传窗口
 	    acx += '<div name="imgPasterDlg" class="panel-paster" style="display:none;">';
 	    acx += '<img name="ico" id="infIco" alt="进度图标" src="' + this.Config["IcoUploader"] + '" /><span name="msg">图片上传中...</span><span name="percent">10%</span>';
-	    acx += '</div>';
+        acx += '</div>';
+        //安装提示
+        acx += '<div name="ui-setup" class="panel-paster panel-setup"></div>';
 	    //图片批量上传窗口
 	    acx += '<div name="filesPanel" class="panel-files" style="display: none;"></div>';
 	    //
@@ -328,6 +334,8 @@ function WordPasterManager()
 	    this.imgIco         = this.imgPasterDlg.find('img[name="ico"]');
 	    this.imgMsg         = this.imgPasterDlg.find('span[name="msg"]');
 	    this.imgPercent     = this.imgPasterDlg.find('span[name="percent"]');
+        this.ui.single      = dom.find('div[name="imgPasterDlg"]');
+        this.ui.setup       = dom.find('div[name="ui-setup"]');
 
 	    this.init();
 	};
@@ -341,10 +349,12 @@ function WordPasterManager()
 	    this.fileItem       = dom.find('div[name="fileItem"]');
 	    this.filesPanel     = dom.find('div[name="filesPanel"]');
 	    this.imgUploaderDlg = dom.find('div[name="filesPanel"]');
-	    this.imgPasterDlg   = dom.find('div[name="imgPasterDlg"]');
+        this.imgPasterDlg   = dom.find('div[name="imgPasterDlg"]');
+        this.ui.single      = dom.find('div[name="imgPasterDlg"]');
 	    this.imgIco         = this.imgPasterDlg.find('img[name="ico"]');
 	    this.imgMsg         = this.imgPasterDlg.find('span[name="msg"]');
 	    this.imgPercent     = this.imgPasterDlg.find('span[name="percent"]');
+        this.ui.setup       = dom.find('div[name="ui-setup"]');
 
 	    this.init();
 	};
@@ -353,7 +363,8 @@ function WordPasterManager()
 	this.init = function ()
 	{
 	    $(function ()
-	    {
+        {
+            _this.setup_check();
 	        _this.event.emit("pageLoad");
 	        //_this.setuped = _this.Browser.Check();
 	        //if (_this.setuped)
