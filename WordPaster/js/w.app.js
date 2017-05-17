@@ -5,13 +5,16 @@
     {
         return null != this.GetVersion();
     }
-    , checkFF: function () {
+    , supportFF: function () {
         var mimetype = navigator.mimeTypes;
         if (typeof mimetype == "object" && mimetype.length) {
             for (var i = 0; i < mimetype.length; i++) {
-                var enabled = mimetype[i].type == this.ins.Config.firefox.type;
-                if (!enabled) enabled = mimetype[i].type == this.ins.Config.firefox.type.toLowerCase();
-                if (enabled) return mimetype[i].enabledPlugin;
+                try {
+                    var enabled = mimetype[i].type == this.ins.Config.firefox.type;
+                    if (!enabled) enabled = mimetype[i].type == this.ins.Config.firefox.type.toLowerCase();
+                    if (enabled) return mimetype[i].enabledPlugin;
+                }
+                catch (e){ }
             }
         }
         else {

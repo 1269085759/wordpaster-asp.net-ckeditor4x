@@ -184,7 +184,7 @@ function WordPasterManager()
 	    //44+版本使用Native Message
 	    if (parseInt(this.chrVer[1]) >= 44)
 	    {
-	        if (!this.BrowserChrome.Check())//仍然支持npapi
+            if (!this.app.supportFF())//仍然支持npapi
             {
                 this.event.on("pageLoad", function () {
                     _this.edgeApp.run();
@@ -223,7 +223,7 @@ function WordPasterManager()
 	    });
 	}
 
-	this.setupTip = function ()
+	this.need_setup = function ()
 	{
 	    this.OpenDialogPaste();
 	    var dom = this.imgMsg.html("未检测到控件，请先<a name='aCtl'>安装控件</a>,Chrome 45+需要单独<a name='aCrx'>安装扩展</a>");
@@ -407,8 +407,8 @@ function WordPasterManager()
 	this.Paste = function (evt)
 	{
 	    if (!this.setuped)
-	    {
-	        this.setupTip(); return;
+        {
+            this.need_setup(); return;
 	    }
 	    if (!this.chrome45 && !_this.edge)
 	    {
@@ -429,8 +429,8 @@ function WordPasterManager()
 	this.PasteManual = function ()
 	{
 	    if (!this.setuped)
-	    {
-	        this.setupTip(); return;
+        {
+            this.need_setup(); return;
         }
         this.app.paste();
 	};
