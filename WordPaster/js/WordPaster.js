@@ -143,7 +143,8 @@ function WordPasterManager()
 	            });
 	        }
 	    }
-	};
+    };
+    this.event.on("edgeLoad", function () { _this.app.init();});
 
 	var browserName = navigator.userAgent.toLowerCase();
 	this.ie = browserName.indexOf("msie") > 0;
@@ -681,7 +682,7 @@ function WordPasterManager()
 	};
 	this.load_complete_edge = function (json)
 	{
-	    _this.event.emit("load_complete");
+	    _this.event.emit("edgeLoad");
     };
     this.load_complete = function (json)
     {
