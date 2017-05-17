@@ -26,7 +26,7 @@ var WordPasterError = {
 var WordPasterConfig = {
 	"EncodeType"		    : "GB2312"
 	, "Company"			    : "荆门泽优软件有限公司"
-	, "Version"			    : "1,5,123,31671"
+	, "Version"			    : "1,5,125,50965"
 	, "License"			    : ""
 	, "Debug"			    : false//调试模式
 	, "LogFile"			    : "f:\\log.txt"//日志文件路径
@@ -45,7 +45,7 @@ var WordPasterConfig = {
 	, "PostUrl"			    : "http://www.ncmem.com/products/word-imagepaster/fckeditor2461/asp.net/upload.aspx"
     //x86
 	, "ClsidParser"		    : "2404399F-F06B-477F-B407-B8A5385D2C5E"
-	, "CabPath"			    : "http://www.ncmem.com/download/WordPaster2/WordPaster.cab"
+	, "CabPath"			    : "http://localhost:83/WordPaster.cab"
 	//x64
 	, "ClsidParser64"		: "7C3DBFA4-DDE6-438A-BEEA-74920D90764B"
 	, "CabPath64"			: "http://www.ncmem.com/download/WordPaster2/WordPaster64.cab"
@@ -233,7 +233,16 @@ function WordPasterManager()
 	    crx.attr("href", this.Config["NatPath"]);
 	    this.imgPercent.hide();
 	    this.imgIco.hide();
-	};
+    };
+    this.need_update = function ()
+    {
+        this.OpenDialogPaste();
+        var dom = this.imgMsg.html("发现新版本，请<a name='w-exe' href='#'>更新</a>");
+        var lnk = dom.find('a[name="w-exe"]');
+        lnk.attr("href", this.Config["ExePath"]);
+        this.imgPercent.hide();
+        this.imgIco.hide();
+    };
 	this.setupTipClose = function ()
 	{
 	    var dom = this.imgMsg.html("图片上传中......");
@@ -305,7 +314,10 @@ function WordPasterManager()
 	{
 	    var dom             = $(document.body).append(this.GetHtml());
 	    this.ffPaster       = dom.find('embed[name="ffPaster"]').get(0);
-	    this.ieParser       = dom.find('object[name="ieParser"]').get(0);
+        this.ieParser       = dom.find('object[name="ieParser"]').get(0);
+        this.parter = this.ffPaster;
+        if (this.ie) this.parter = this.ieParser;
+        if (this.ie || this.firefox) this.parter.recvMessage = this.recvMessage;
 	    this.line           = dom.find('div[name="line"]');
 	    this.fileItem       = dom.find('div[name="fileItem"]');
 	    this.filesPanel     = dom.find('div[name="filesPanel"]');
@@ -673,16 +685,17 @@ function WordPasterManager()
     this.load_complete = function (json)
     {
         var needUpdate = true;
-        if (typeof (json.version) != "undefined") {
+        if (typeof (json.version) != "undefined")
+        {
+            this.setuped = true;
             if (json.version == this.Config.Version) {
                 needUpdate = false;
-                this.setuped = true;
             }
         }
-        if (needUpdate) this.setupTip();
+        if (needUpdate) this.need_update();
         else { this.setupTipClose(); }
     };
-	this.WordParser_StateChanged = function (msg)
+    this.recvMessage = function (msg)
 	{
 	    var json = JSON.parse(msg);
 	    if      (json.name == "Parser_PasteWord") _this.WordParser_PasteWord(json);

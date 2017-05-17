@@ -45,7 +45,7 @@
     }
     , init: function () {
         var param = { name: "init", config: this.ins.Config,fields:this.ins.Fields };
-        this.postMessage(JSON.stringify(param));
+        this.postMessage(param);
     }
     , exit: function () {
         var par = { name: 'exit' };
@@ -59,11 +59,11 @@
     }
     , paste: function () {
         var param = { name: "paste"};
-        this.postMessage(JSON.stringify(param));
+        this.postMessage(param);
     }
     , pasteAuto: function (data) {
         var param = { name: "pasteAuto",html:data};
-        this.postMessage(JSON.stringify(param));
+        this.postMessage(param);
     }
     , postMessage: function (json) {
         try {
