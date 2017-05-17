@@ -88,6 +88,24 @@ var WordPasteImgType = {local:0/*本地图片*/,network:1/*网络图片*/,word:2
 */
 function WordPasterManager()
 {
+    //pageLoad,pageClose
+    this.event = {
+        on: function (eventName, callback) {
+            if (!this[eventName]) {
+                this[eventName] = [];
+            }
+            this[eventName].push(callback);
+        },
+        emit: function (eventName) {
+            var that = this;
+            var params = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [];
+            if (that[eventName]) {
+                Array.prototype.forEach.call(that[eventName], function (arg) {
+                    arg.apply(self, params);
+                });
+            }
+        }
+    };
     var _this = this;
     this.Editor = null;
     this.Fields = {}; //符加信息
@@ -121,32 +139,6 @@ function WordPasterManager()
     this.edgeApp = new WebServer(this);
     this.app = WordPasterApp;
     this.app.ins = this;
-
-    //pageLoad,pageClose
-	this.event = {
-	    on: function (eventName, callback)
-	    {
-	        if (!this[eventName])
-	        {
-	            this[eventName] = [];
-	        }
-	        this[eventName].push(callback);
-	    },
-	    emit: function (eventName)
-	    {
-	        var that = this;
-	        var params = arguments.length > 1 ? Array.prototype.slice.call(arguments, 1) : [];
-	        if (that[eventName])
-	        {
-	            Array.prototype.forEach.call(that[eventName], function (arg)
-	            {
-	                arg.apply(self, params);
-	            });
-	        }
-	    }
-    };
-    this.event.on("edgeLoad", function () { _this.app.init();});
-
 	var browserName = navigator.userAgent.toLowerCase();
 	this.ie = browserName.indexOf("msie") > 0;
     //IE11
@@ -158,6 +150,18 @@ function WordPasterManager()
 	this.chrVer = navigator.appVersion.match(/Chrome\/(\d+)/);
 	if (this.edge) { this.ie = this.firefox = this.chrome = this.chrome45 = false; }
 
+
+    this.event.on("edgeLoad", function () { _this.app.init(); });
+    this.event.on("pageLoad", function () {
+        _this.setup_check();
+        if (_this.edge) {
+            _this.edgeApp.runChr();
+        }
+        else { _this.app.init(); }
+    });
+    $(window).bind("beforeunload", function () {
+        if (this.edge) _this.edgeApp.close();
+    });
 	if (this.ie)
 	{
 	    //Win64
@@ -189,54 +193,23 @@ function WordPasterManager()
             if (!this.app.supportFF())//仍然支持npapi
             {
                 this.app.postMessage = this.app.postMessageEdge;
-                this.event.on("pageLoad", function () {
-                    _this.edgeApp.runChr();
-                });
-                $(window).bind("beforeunload", function () {
-                    _this.edgeApp.close();
-                });
-                this.event.on("load_complete", function () {
-                    var par = { name: "init", config: _this.Config };
-                    _this.edgeApp.send(par);
-                    _this.setuped = true;
-                    _this.setupTipClose();
-                });
+                this.edge = true;
 	        }
 	    }
 	}
 	else if (this.edge)
     {
         this.app.postMessage = postMessageEdge;
-	    jQuery.extend(_this.Browser, _this.BrowserEdge);
-	    jQuery.extend(_this.WordParserIE, _this.WordParserEdge);
-	    this.event.on("pageLoad", function ()
-	    {
-	        _this.edgeApp.run();
-	    });
-	    $(window).bind("beforeunload", function ()
-	    {
-	        _this.edgeApp.close();
-	    });
-	    this.event.on("load_complete", function ()
-	    {
-	        var par = { name: "init", config: _this.Config };
-	        _this.edgeApp.send(par);
-	        _this.setuped = true;
-	        _this.setupTipClose();
-	    });
 	}
     this.setup_check = function ()
     {
         this.ui.setup.skygqbox();
-        //this.OpenDialogPaste();
         var dom = this.ui.setup.html("控件加载中，如果未加载成功请先<a name='w-exe'>安装控件</a>");
         var lnk = dom.find('a[name="w-exe"]');
         lnk.attr("href", this.Config["ExePath"]);
     }
 	this.need_setup = function ()
     {
-        this.ui.setup.skygqbox();
-	    //this.OpenDialogPaste();
         var dom = this.ui.setup.html("未检测到控件，请先<a name='aCtl'>安装控件</a>,Chrome 45+需要单独<a name='aCrx'>安装扩展</a>");
 	    var lnk = dom.find('a[name="aCtl"]');
 	    lnk.attr("href", this.Config["ExePath"]);
@@ -364,19 +337,7 @@ function WordPasterManager()
 	{
 	    $(function ()
         {
-            _this.setup_check();
 	        _this.event.emit("pageLoad");
-	        //_this.setuped = _this.Browser.Check();
-	        //if (_this.setuped)
-	        {
-	            _this.app.init();//
-
-	            //_this.CheckUpdate();//
-	        }
-	        //else
-	        {
-	            //_this.setupTip();
-	        }
 	    });
 	};
 
@@ -706,7 +667,7 @@ function WordPasterManager()
             }
         }
         if (needUpdate) this.need_update();
-        else { this.setupTipClose(); }
+        else { this.ui.setup.hide(); }
     };
     this.recvMessage = function (msg)
 	{
