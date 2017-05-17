@@ -440,11 +440,21 @@ function WordPasterManager()
 	    if (parseInt(this.chrVer[1]) >= 44)
 	    {
 	        if (!this.BrowserChrome.Check())//仍然支持npapi
-	        {
-	            _this.chrome45 = true;//
-	            _this.Browser = this.BrowserNat;
-	            _this.Browser.Check();
-	            this.WordParser = this.WordParserNat;
+            {
+                jQuery.extend(_this.Browser, _this.BrowserEdge);
+                jQuery.extend(_this.WordParserIE, _this.WordParserEdge);
+                this.event.on("pageLoad", function () {
+                    _this.edgeApp.run();
+                });
+                $(window).bind("beforeunload", function () {
+                    _this.edgeApp.close();
+                });
+                this.event.on("load_complete", function () {
+                    var par = { name: "Init", config: _this.Config };
+                    _this.edgeApp.send(par);
+                    _this.setuped = true;
+                    _this.setupTipClose();
+                });
 	        }
 	    }
 	}

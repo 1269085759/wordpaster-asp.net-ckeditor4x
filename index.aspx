@@ -37,7 +37,7 @@
     <script type="text/javascript">
         var pasterMgr = new WordPasterManager();
         //pasterMgr.Config["PostUrl"] = "http://www.ncmem.com/products/upload_ori.aspx";
-        pasterMgr.Config["PostUrl"] = "http://localhost:20741/upload.aspx"
+        pasterMgr.Config["PostUrl"] = "http://localhost:83/upload.aspx"
         pasterMgr.Config["Cookie"] = 'ASP.NET_SessionId=<%=Session.SessionID%>';
         pasterMgr.Load();//加载控件
 
