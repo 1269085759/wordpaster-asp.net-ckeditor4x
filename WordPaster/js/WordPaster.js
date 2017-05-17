@@ -70,13 +70,6 @@ var WordPasterActiveX = {
 	, "WordParser64"	: "Xproer.WordParser2x64"
 };
 
-//浏览器版本
-var BrowserVersion = {
-    IE: 0
-	, IE64: 1
-	, Firefox: 2
-	, Chrome: 3
-};
 var WordPasteImgType = {local:0/*本地图片*/,network:1/*网络图片*/,word:2/*word图片*/};
 
 /*
@@ -124,7 +117,6 @@ function WordPasterManager()
     this.filesPanel = null;//jquery obj
     this.fileItem = null;//jquery obj
     this.line = null;//jquery obj
-    this.BrowserVer = BrowserVersion.IE;
 	this.ActiveX = WordPasterActiveX;
 	this.Config = WordPasterConfig;
 	this.EditorContent = ""; //编辑器内容。当图片上传完后需要更新此变量值
@@ -167,7 +159,6 @@ function WordPasterManager()
 	    //Win64
 	    if (window.navigator.platform == "Win64")
 	    {
-	        _this.BrowserVer = BrowserVersion.IE64;
 	        _this.Config["ClsidParser"] = this.Config["ClsidParser64"];
 	        _this.Config["CabPath"] = this.Config["CabPath64"];
 	        //ActiveX
@@ -176,17 +167,11 @@ function WordPasterManager()
 	} //Firefox
 	else if (this.firefox)
 	{
-	    _this.BrowserVer = BrowserVersion.Firefox;
-	    _this.Browser = this.BrowserFF;
-	    this.WordParser = this.WordParserFF;
 	} //chrome
 	else if (this.chrome)
 	{
-	    _this.BrowserVer = BrowserVersion.Chrome;
 	    _this.Config["XpiPath"] = _this.Config["CrxPath"];
 	    _this.Config["XpiType"] = _this.Config["CrxType"];
-	    _this.Browser = this.BrowserChrome;
-	    this.WordParser = this.WordParserFF;
 	    //44+版本使用Native Message
 	    if (parseInt(this.chrVer[1]) >= 44)
 	    {
