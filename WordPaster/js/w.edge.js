@@ -72,6 +72,6 @@
     };
     this.send = function (p)
     {
-        if (this.socket) this.socket.send(JSON.stringify(p));
+        if (this.socket) this.socket.send(p);
     };
 }
