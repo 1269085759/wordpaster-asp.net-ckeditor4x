@@ -117,7 +117,9 @@ function WordPasterManager()
 	this.fileMap = new Object();//文件映射表。
 	this.postType = WordPasteImgType.word;//默认是word
 	this.working = false;//正在上传中
-	this.edgeApp = new WebServer(this);
+    this.edgeApp = new WebServer(this);
+    this.app = WordPasterApp;
+    this.app.ins = this;
 
     //pageLoad,pageClose
 	this.event = {
@@ -143,263 +145,6 @@ function WordPasterManager()
 	    }
 	};
 
-    //IE浏览器信息管理对象
-	this.BrowserIE = {
-	    "GetHtml": function ()
-	    {
-	        /*ActiveX的静态加载方式，如果在框架页面中使用此控件，推荐使用静态加截方式。
-			<div style="display: none">
-			<object id="Paster" classid="clsid:2404399F-F06B-477F-B407-B8A5385D2C5E" codebase="http://www.ncmem.com/WordPaster.cab#version=1,6,26,54978" width="1" height="1"></object>
-			</div>
-			*/
-	        var acx = '<div style="display: none">';
-	        //Word解析组件
-	        acx += ' <object id="objWordParser" classid="clsid:' + _this.Config["ClsidParser"] + '"';
-	        acx += ' codebase="' + _this.Config["CabPath"] + '#version=' + _this.Config["Version"] + '"';
-	        acx += ' width="1" height="1" ></object>';
-	        acx += '</div>';
-	        return acx;
-	    }
-		, "Check": function ()
-		{
-		    try
-		    {
-		        var v = _this.ieParser.Version;
-		        return true;
-		    }
-		    catch (e) { return false; }
-		}
-	    , "CheckVer": function ()
-	    {
-	        try
-	        {
-	            return _this.ieParser.Version != _this.Config["Version"];
-	        }
-	        catch (e) { return true; }
-	    }
-		, "Init": function () { }
-	};
-    //FireFox浏览器信息管理对象
-	this.BrowserFF = {
-	    "GetHtml": function ()
-	    {
-	        var html = '<embed type="' + _this.Config["XpiType"] + '" pluginspage="' + _this.Config["XpiPath"] + '" width="1" height="1" id="objWordPaster"/>';
-	        return html;
-	    }
-        , "Check": function ()
-        {
-            var mimetype = navigator.mimeTypes;
-            if (typeof mimetype == "object" && mimetype.length)
-            {
-                for (var i = 0; i < mimetype.length; i++)
-                {
-                	var exist = mimetype[i].type == _this.Config["XpiType"];//low ff
-                	if(!exist) exist = mimetype[i].type == _this.Config["XpiType"].toLowerCase();//high ff
-                	if(exist) return mimetype[i].enabledPlugin;
-                }
-            }
-            else
-            {
-                mimetype = [_this.Config["XpiType"]];
-            }
-            if (mimetype)
-            {
-                return mimetype.enabledPlugin;
-            }
-            return false;
-        }
-	    , "CheckVer": function ()
-	    {
-	        try
-	        {
-	            return _this.ffPaster.Version != _this.Config["Version"];
-	        }
-	        catch (e) { return true;}
-	    }//安装插件
-		, "Setup": function ()
-		{
-		    var xpi = new Object();
-		    xpi["Calendar"] = _this.Config["XpiPath"];
-		    InstallTrigger.install(xpi, function (name, result) { });
-		}
-		, "Init": function () { }
-	};
-    //Chrome浏览器信息管理对象
-	this.BrowserChrome = {
-	    "GetHtml": function ()
-	    {
-	        var html = '<embed type="' + _this.Config["CrxType"] + '" pluginspage="' + _this.Config["CrxPath"] + '" width="1" height="1" id="objWordPaster"/>';
-	        return html;
-	    }
-		, "Check": function ()
-		{
-		    for (var i = 0, l = navigator.plugins.length; i < l; i++)
-		    {
-		        if (navigator.plugins[i].name == _this.Config["CrxName"])
-		        {
-		            return true;
-		        }
-		    }
-		    return false;
-		}
-	    , "CheckVer": function ()
-	    {
-	        try
-	        {
-	            return _this.ffPaster.Version != _this.Config["Version"];
-	        }
-	        catch (e) { return true; }
-	    } //安装插件
-		, "Setup": function ()
-		{
-		    document.write('<iframe style="display:none;" src="' + _this.Config["XpiPath"] + '"></iframe>');
-		}
-		, "Init": function () { }
-	};
-	this.BrowserNat = {
-	    "GetHtml": function ()
-	    {
-	        var html = '<embed type="' + _this.Config["CrxType"] + '" pluginspage="' + _this.Config["CrxPath"] + '" width="1" height="1" id="objWordPaster"/>';
-	        return html;
-	    }
-		, "Check": function ()
-		{
-		    var img = document.createElement('img');
-		    img.src = 'chrome-extension://' + _this.Config.ExtensionID + '/icon.jpg';
-		    img.onload = function () { _this.natInstalled = true; };
-		    img.onerror = function () { _this.setupTip(); };
-		    //chrome.management.get(_this.Config.ExtensionID, function (exInf) { _this.natInstall = true; });
-		    return true;
-		}
-	    , "CheckVer": function ()
-	    {
-	        return false;
-	    } //安装插件
-		, "Setup": function ()
-		{
-		    document.write('<iframe style="display:none;" src="' + _this.Config["XpiPath"] + '"></iframe>');
-		}
-		, "Init": function (){}
-	};
-	this.BrowserEdge = {
-	    "Check": function () { }
-	    , "CheckVer": function ()
-	    {
-	        return false;
-	    }
-        , "Init": function () { }
-	};
-
-    //WordParser Control
-	this.WordParserIE = {
-	    "Init": function ()
-	    {
-	        if (!_this.Browser.Check()) return;
-	        this.parser = _this.ieParser;
-	        var param = { config: _this.Config, fields: _this.Fields };
-	        this.parser.Init(JSON.stringify(param));
-	        this.parser.StateChanged = _this.WordParser_StateChanged;
-	    }
-        , "Paste": function ()
-        {
-            if (_this.working) return;
-            _this.working = true;
-            _this.ieParser.Paste()
-        }
-        , "PasteAuto": function (html)
-        {
-            if (_this.working) return;
-            _this.working = true;
-            _this.ieParser.PasteAuto(html)
-        }
-        , "HasData": function () { return _this.ieParser.HasData();}
-	};
-	this.WordParserFF = {
-	    "Init": function ()
-	    {
-	        if (!_this.Browser.Check()) return;
-	        this.parser = _this.ffPaster;
-	        var param = { config: _this.Config, fields: _this.Fields };
-	        this.parser.Init(JSON.stringify(param));
-	        this.parser.StateChanged = _this.WordParser_StateChanged;
-	    }
-        , "Paste": function ()
-        {
-            if (_this.working) return;
-            _this.working = true;
-            _this.ffPaster.Paste();
-        }
-        , "PasteAuto": function (html)
-        {
-            if (_this.working) return;
-            _this.working = true;
-            _this.ffPaster.PasteAuto(html)
-        }
-        , "HasData": function () { return _this.ffPaster.HasData(); }
-	};
-    //chrome 45 Native Message
-	this.WordParserNat = {
-	     "entID": "WordPasterEvent"
-	    ,"Init": function ()
-	    {
-	        this.exitEvent();
-	        document.addEventListener('WordPasterEventCallBack', function (evt)
-	        {
-	            _this.WordParser_StateChanged(JSON.stringify(evt.detail));
-	        });
-	    }
-        , "Paste": function ()
-        {
-            if (_this.working) return;
-            _this.working = true;
-            var par = { name: 'Paste', config: _this.Config, fields: _this.Fields };
-            var evt = document.createEvent("CustomEvent");
-            evt.initCustomEvent(this.entID, true, false, par);
-            document.dispatchEvent(evt);
-        }
-        , "PasteAuto": function (html)
-        {
-            if (_this.working) return;
-            _this.working = true;
-            var par = { name: 'PasteAuto', data: html,config: _this.Config, fields: _this.Fields };
-            var evt = document.createEvent("CustomEvent");
-            evt.initCustomEvent(this.entID, true, false, par);
-            document.dispatchEvent(evt);
-        }
-        , "exit": function ()
-        {
-            var par = { name: 'exit'};
-            var evt = document.createEvent("CustomEvent");
-            evt.initCustomEvent(this.entID, true, false, par);
-            document.dispatchEvent(evt);
-        }
-        , "exitEvent": function ()
-        {
-            var obj = this;
-            $(window).bind("beforeunload", function () { obj.exit(); });
-        }
-	};
-	this.WordParserEdge = {
-	    "Init": function ()
-	    {
-	    }
-        , "Paste": function ()
-        {
-            if (_this.working) return;
-            _this.working = true;
-            var par = { name: 'Paste', config: _this.Config, fields: _this.Fields };
-            _this.edgeApp.send(par);
-        }
-        , "PasteAuto": function (html)
-        {
-            if (_this.working) return;
-            _this.working = true;
-            var par = { name: 'PasteAuto', data: html, config: _this.Config, fields: _this.Fields };
-            _this.edgeApp.send(par);
-        }
-	};
-	this.WordParser = this.WordParserIE;
-	this.Browser = this.BrowserIE;
 	var browserName = navigator.userAgent.toLowerCase();
 	this.ie = browserName.indexOf("msie") > 0;
     //IE11
@@ -441,8 +186,6 @@ function WordPasterManager()
 	    {
 	        if (!this.BrowserChrome.Check())//仍然支持npapi
             {
-                jQuery.extend(_this.Browser, _this.BrowserEdge);
-                jQuery.extend(_this.WordParserIE, _this.WordParserEdge);
                 this.event.on("pageLoad", function () {
                     _this.edgeApp.run();
                 });
@@ -450,7 +193,7 @@ function WordPasterManager()
                     _this.edgeApp.close();
                 });
                 this.event.on("load_complete", function () {
-                    var par = { name: "Init", config: _this.Config };
+                    var par = { name: "init", config: _this.Config };
                     _this.edgeApp.send(par);
                     _this.setuped = true;
                     _this.setupTipClose();
@@ -459,7 +202,8 @@ function WordPasterManager()
 	    }
 	}
 	else if (this.edge)
-	{
+    {
+        this.app.postMessage = postMessageEdge;
 	    jQuery.extend(_this.Browser, _this.BrowserEdge);
 	    jQuery.extend(_this.WordParserIE, _this.WordParserEdge);
 	    this.event.on("pageLoad", function ()
@@ -472,7 +216,7 @@ function WordPasterManager()
 	    });
 	    this.event.on("load_complete", function ()
 	    {
-	        var par = { name: "Init", config: _this.Config };
+	        var par = { name: "init", config: _this.Config };
 	        _this.edgeApp.send(par);
 	        _this.setuped = true;
 	        _this.setupTipClose();
@@ -495,7 +239,8 @@ function WordPasterManager()
 	    var dom = this.imgMsg.html("图片上传中......");
 	    this.imgPercent.show();
 	    this.imgIco.show();
-	    this.CloseDialogPaste();
+        this.CloseDialogPaste();
+        this.setuped = true;
 	};
 	this.CheckUpdate = function ()
 	{
@@ -596,16 +341,16 @@ function WordPasterManager()
 	    $(function ()
 	    {
 	        _this.event.emit("pageLoad");
-	        _this.setuped = _this.Browser.Check();
-	        if (_this.setuped)
+	        //_this.setuped = _this.Browser.Check();
+	        //if (_this.setuped)
 	        {
-	            _this.WordParser.Init();//
+	            _this.app.init();//
 
-	            _this.CheckUpdate();//
+	            //_this.CheckUpdate();//
 	        }
-	        else
+	        //else
 	        {
-	            _this.setupTip();
+	            //_this.setupTip();
 	        }
 	    });
 	};
@@ -653,22 +398,18 @@ function WordPasterManager()
 	    {
 	        this.setupTip(); return;
 	    }
-	    console.log(_this.edge);
 	    if (!this.chrome45 && !_this.edge)
 	    {
-	        if (_this.WordParser.HasData())
-	        {
-	            evt.cancel();
-	            _this.WordParser.Paste();
-	        }
+	        evt.cancel();
+            this.app.paste();
 	    }
 	    else if (this.chrome45)
 	    {
-	        _this.WordParser.Paste();
+            this.app.paste();
 	    }
 	    else if(this.edge)
 	    {
-	        _this.WordParser.Paste();
+            this.app.paste();
 	    }
 	};
 
@@ -678,28 +419,15 @@ function WordPasterManager()
 	    if (!this.setuped)
 	    {
 	        this.setupTip(); return;
-	    }
-	    if(this.edge)
-	    {
-	        _this.WordParser.Paste();
-	    }//chrome 45直接调用控件命令
-	    if (this.chrome45)
-	    {
-	        if (!this.natInstalled) { this.setupTip(); return;}
-	        _this.WordParser.Paste();
-	    }//非chrome 45则进行判断
-	    else
-	    {
-	        if (_this.WordParser.HasData()) _this.WordParser.Paste();
-	        else this.GetEditor().execCommand('paste');
-	    }
+        }
+        this.app.paste();
 	};
 
     //上传网络图片
 	this.UploadNetImg = function ()
 	{
 	    var data = this.GetEditor().getData();
-	    _this.WordParser.PasteAuto(data);
+        this.app.pasteAuto(data);
 	};
 
     //加载粘贴事件	
@@ -707,7 +435,7 @@ function WordPasterManager()
 	{
 	    edt.on('paste', function (evt)
 	    {
-	        _this.Paste(evt);
+            _this.Paste(evt);
 	    });
 	};
 
@@ -948,6 +676,7 @@ function WordPasterManager()
         if (typeof (json.version) != "undefined") {
             if (json.version == this.Config.Version) {
                 needUpdate = false;
+                this.setuped = true;
             }
         }
         if (needUpdate) this.setupTip();
