@@ -621,7 +621,7 @@ function WordPasterManager()
             }
         }
         if (needUpdate) this.need_update();
-        else { this.ui.setup.hide(); }
+        else { $('#wrapClose').click(); }
     };
     this.recvMessage = function (msg)
 	{
