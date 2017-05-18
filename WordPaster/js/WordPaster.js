@@ -260,9 +260,6 @@ function WordPasterManager()
 	    var dom             = $(document.body).append(this.GetHtml());
 	    this.ffPaster       = dom.find('embed[name="ffPaster"]').get(0);
         this.ieParser       = dom.find('object[name="ieParser"]').get(0);
-        this.parter = this.ffPaster;
-        if (this.ie) this.parter = this.ieParser;
-        if (this.ie || this.firefox) this.parter.recvMessage = this.recvMessage;
 	    this.line           = dom.find('div[name="line"]');
 	    this.fileItem       = dom.find('div[name="fileItem"]');
 	    this.filesPanel     = dom.find('div[name="filesPanel"]');
@@ -282,9 +279,6 @@ function WordPasterManager()
 	    var dom             = $("#" + oid).append(this.GetHtml());
 	    this.ffPaster       = dom.find('embed[name="ffPaster"]').get(0);
 	    this.ieParser       = dom.find('object[name="ieParser"]').get(0);
-        this.parter = this.ffPaster;
-        if (this.ie) this.parter = this.ieParser;
-        if (this.ie || this.firefox) this.parter.recvMessage = this.recvMessage;
 	    this.line           = dom.find('div[name="line"]');
 	    this.fileItem       = dom.find('div[name="fileItem"]');
 	    this.filesPanel     = dom.find('div[name="filesPanel"]');
@@ -304,6 +298,12 @@ function WordPasterManager()
 	{
 	    $(function ()
         {
+            if (!_this.edge)
+            {
+                _this.parter = _this.ffPaster;
+                if (_this.ie) _this.parter = _this.ieParser;
+                if (_this.ie || _this.firefox) _this.parter.recvMessage = _this.recvMessage;
+            }
             _this.setup_check();
             if (_this.edge) {
                 _this.edgeApp.runChr();
