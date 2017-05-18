@@ -163,7 +163,7 @@ function WordPasterManager()
 	}
 	else if (this.edge)
     {
-        this.app.postMessage = postMessageEdge;
+        this.app.postMessage = this.app.postMessageEdge;
 	}
     this.setup_check = function ()
     {
