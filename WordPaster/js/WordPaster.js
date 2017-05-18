@@ -419,23 +419,6 @@ function WordPasterManager()
 	};
 
 	/*
-	验证文件名是否存在
-	参数:
-		fileName 包含完整路径的文件名称
-	*/
-	this.Exist = function(fileName)
-	{
-		for (a in this.UploaderList)
-		{
-			if (this.UploaderList[a].LocalFile == fileName)
-			{
-				return true;
-			}
-		}
-		return false;
-	};
-
-	/*
 	根据ID删除上传任务
 	参数:
 	fileID
