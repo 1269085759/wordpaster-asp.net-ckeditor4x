@@ -121,6 +121,7 @@ function WordPasterManager()
 	this.chrome45 = false;
 	this.edge = navigator.userAgent.indexOf("Edge") > 0;
 	this.chrVer = navigator.appVersion.match(/Chrome\/(\d+)/);
+	this.ffVer = navigator.userAgent.match(/Firefox\/(\d+)/);
 	if (this.edge) { this.ie = this.firefox = this.chrome = this.chrome45 = false; }
 
     $(window).bind("beforeunload", function () {
@@ -136,7 +137,7 @@ function WordPasterManager()
 	}//Firefox
 	if (this.firefox)
     {
-        if (!this.app.supportFF())//仍然支持npapi
+	    if (!this.app.supportFF() || parseInt(this.ffVer[1]) >= 50)//仍然支持npapi
         {
             this.app.postMessage = this.app.postMessageEdge;
             this.edge = true;
