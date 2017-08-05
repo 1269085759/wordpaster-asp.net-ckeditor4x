@@ -25,7 +25,7 @@ var WordPasterError = {
 var WordPasterConfig = {
 	"EncodeType"		    : "GB2312"
 	, "Company"			    : "荆门泽优软件有限公司"
-	, "Version"			    : "1,5,127,51154"
+	, "Version"			    : "1,5,128,51252"
 	, "License"			    : ""
 	, "Debug"			    : false//调试模式
 	, "LogFile"			    : "f:\\log.txt"//日志文件路径
@@ -169,6 +169,7 @@ function WordPasterManager()
     };
     this.need_update = function ()
     {
+        this.ui.setup.skygqbox();
         var dom = this.ui.setup.html("发现新版本，请<a name='w-exe' href='#'>更新</a>");
         var lnk = dom.find('a[name="w-exe"]');
         lnk.attr("href", this.Config["ExePath"]);
@@ -292,7 +293,7 @@ function WordPasterManager()
                 if (_this.ie) _this.parter = _this.ieParser;
                 _this.parter.recvMessage = _this.recvMessage;
             }
-            _this.setup_tip();
+            //_this.setup_tip();
             if (_this.edge) {
                 _this.edgeApp.runChr();
             }
